@@ -22,11 +22,22 @@ function Post() {
 
   const addComment = () => {
     axios
-      .post("http://localhost:3001/comments", {
-        commentBody: newComment,
-        PostId: id,
-      })
+      .post(
+        "http://localhost:3001/comments",
+        {
+          commentBody: newComment,
+          PostId: id,
+        },
+        {
+          headers: {
+            accessToken: sessionStorage.getItem("accessToken"),
+          },
+        }
+      )
       .then((response) => {
+        if (response.data.error) {
+          alert("Your not logged in");
+        }
         const commentToAdd = { commentBody: newComment };
         setComments([...comments, commentToAdd]);
         setNewComment("");
