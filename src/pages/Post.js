@@ -1,14 +1,16 @@
 // Individual Pages Based on ID
 // using { useParams } hook
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import { AuthContext } from "../Helpers/AuthContext";
 
 function Post() {
   let { id } = useParams();
   const [postObject, setPostObject] = useState({});
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
+  const { authState } = useContext(AuthContext);
 
   useEffect(() => {
     axios.get(`http://localhost:3001/posts/byId/${id}`).then((response) => {
@@ -47,6 +49,20 @@ function Post() {
       });
   };
 
+  function deleteComment(Id) {
+    axios
+      .delete(`http://localhost:3001/comments/${Id}`, {
+        headers: { accessToken: localStorage.getItem("accessToken") },
+      })
+      .then(() => {
+        setComments(
+          comments.filter((val) => {
+            return val.id !== Id;
+          })
+        );
+      });
+  }
+
   return (
     <div className="postPage">
       <div className="leftSide">
@@ -73,6 +89,16 @@ function Post() {
               <div key={key} className="comment">
                 {comment.commentBody}
                 <label> User: {comment.username}</label>
+                {authState.username === comment.username && (
+                  <label
+                    onClick={() => {
+                      deleteComment(comment.id);
+                    }}
+                  >
+                    {" "}
+                    X
+                  </label>
+                )}
               </div>
             );
           })}

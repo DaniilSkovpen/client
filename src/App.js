@@ -10,7 +10,11 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 function App() {
-  const [authState, setAuthState] = useState(false);
+  const [authState, setAuthState] = useState({
+    username: "",
+    id: 0,
+    status: false,
+  });
   useEffect(() => {
     axios
       .get("http://localhost:3001/auth/check", {
@@ -20,10 +24,20 @@ function App() {
       })
       .then((response) => {
         if (response.data.error) {
-          setAuthState(false);
-        } else setAuthState(true);
+          setAuthState({ ...authState, status: false });
+        } else
+          setAuthState({
+            username: response.data.username,
+            id: response.data.id,
+            status: true,
+          });
       });
   }, []);
+
+  const logout = () => {
+    localStorage.removeItem("accessToken");
+    setAuthState({ username: "", id: 0, status: false });
+  };
 
   return (
     <div>
@@ -32,12 +46,15 @@ function App() {
           <div className="navbar">
             <NavLink to="/createPost">Create a post</NavLink>
             <NavLink to="/">Home Page</NavLink>
-            {!authState && (
+            {!authState.status ? (
               <>
                 <NavLink to="/login">Login</NavLink>
                 <NavLink to="/registration">Sign in</NavLink>
               </>
+            ) : (
+              <button onClick={logout}>Log out</button>
             )}
+            <h2>{authState.username}</h2>
           </div>
           <Routes>
             <Route path="/" exact element={<Home />} />
